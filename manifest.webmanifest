@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "Farm Feud Playable",
+  "short_name": "Farm Feud",
+  "description": "A three-round Farm Feud playable experience.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1563b2",
+  "theme_color": "#1563b2",
+  "icons": [
+    {
+      "src": "./assets/app-icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/app-icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
