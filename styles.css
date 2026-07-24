@@ -1204,3 +1204,7 @@ button { font: inherit; }
 .game-stage.dice-animation-preview .dice-cube { display: none; }
 /* The supplied frame sequences replace all CSS placeholder dice. */
 .game-stage[data-roll-theme] .dice-cube { display: none !important; }
+/* Native GIF playback is reliable in mobile WebViews where canvas frame loops may stall. */
+.game-stage[data-roll-theme] .dice-gif-image { display: none; position: absolute; top: 0; z-index: 2; width: var(--cube-size); height: var(--cube-size); margin-top: 0; transform: scale(2); transform-origin: center; pointer-events: none; filter: drop-shadow(0 9px 0 rgba(23,33,42,.2)); }
+.game-stage[data-roll-theme].dice-animation-active .dice-gif-canvas { display: none; }
+.game-stage[data-roll-theme].dice-animation-active .dice-gif-image { display: block; }

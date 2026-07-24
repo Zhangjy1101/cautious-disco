@@ -16,6 +16,8 @@ const elements = {
   valueDie: $('valueDie'),
   redDiceGif: $('redDiceGif'),
   blueDiceGif: $('blueDiceGif'),
+  redDiceAnimation: $('redDiceAnimation'),
+  blueDiceAnimation: $('blueDiceAnimation'),
   skillCallout: $('skillCallout'),
   valueCallout: $('valueCallout'),
   boardResult: $('boardResult'),
@@ -92,6 +94,11 @@ const ROUND_DICE_ANIMATIONS = Object.freeze({
   ],
 });
 const ROUND_DICE_PLAY_MS = 500;
+const ROUND_DICE_GIFS = Object.freeze({
+  1: ['./assets/dice/r1-red3.gif', './assets/dice/r1-blue4.gif'],
+  2: ['./assets/dice/r2-red.gif', './assets/dice/r2-blue.gif'],
+  3: ['./assets/dice/r3-red.gif', './assets/dice/r3-blue.gif'],
+});
 
 const STAGE_ART_ANIMATIONS = [
   { element: elements.stage1BearArt, path: './assets/action-stage1-bear-frames', frameCount: 13, frameMs: 67 },
@@ -345,6 +352,10 @@ const renderDiceAnimation = (now) => {
 
 const restartRoundDice = (roundId) => {
   elements.gameRoot.classList.remove("dice-animation-active", "dice-animation-ready", "dice-animation-preview");
+  const [redGifPath, blueGifPath] = ROUND_DICE_GIFS[roundId] ?? ROUND_DICE_GIFS[1];
+  const gifRunId = Date.now();
+  elements.redDiceAnimation.src = redGifPath + "?v=fd9c004&t=" + gifRunId;
+  elements.blueDiceAnimation.src = blueGifPath + "?v=fd9c004&t=" + gifRunId;
   activeDicePlayers = getDicePlayers(roundId);
   diceAnimationStartedAt = performance.now();
   elements.gameRoot.classList.add("dice-animation-active");
