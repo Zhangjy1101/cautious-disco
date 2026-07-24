@@ -303,7 +303,7 @@ const createDicePlayers = (roundId) => (ROUND_DICE_ANIMATIONS[roundId] ?? []).ma
   const context = animation.canvas.getContext("2d");
   const frames = Array.from({ length: animation.frameCount }, (_, index) => {
     const image = new Image();
-    image.src = animation.framePath + "/" + String(index).padStart(3, "0") + ".png";
+    image.src = animation.framePath + "/" + String(index).padStart(3, "0") + ".png?v=c27bc6d";
     return image;
   });
   return { ...animation, context, frames };
@@ -379,10 +379,7 @@ const dicePreviewObserver = new MutationObserver(() => {
 });
 dicePreviewObserver.observe(elements.gameRoot, { attributes: true, attributeFilter: ["data-round-id"] });
 
-window.setTimeout(() => {
-  void Promise.all([1, 2, 3].map(preloadDiceRound));
-  showDicePreview(1);
-}, 0);
+window.setTimeout(() => { showDicePreview(1); }, 0);
 let controller;
 const moleRound = new MoleRoundController(elements, {
   onLog(event) {
