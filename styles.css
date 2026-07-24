@@ -1208,3 +1208,9 @@ button { font: inherit; }
 .game-stage[data-roll-theme] .dice-gif-image { display: none; position: absolute; top: 0; z-index: 2; width: var(--cube-size); height: var(--cube-size); margin-top: 0; transform: scale(2); transform-origin: center; pointer-events: none; filter: drop-shadow(0 9px 0 rgba(23,33,42,.2)); }
 .game-stage[data-roll-theme].dice-animation-active .dice-gif-canvas { display: none; }
 .game-stage[data-roll-theme].dice-animation-active .dice-gif-image { display: block; }
+/* Native dice rolls are compact and centered within the board. */
+.game-stage[data-roll-theme].dice-animation-active .dice-pair { top: 50%; left: 50%; gap: 22px; }
+.game-stage[data-roll-theme].dice-animation-active .dice-gif-image { transform: scale(1.3333); }
+@media (max-width: 380px) {
+  .game-stage[data-roll-theme].dice-animation-active .dice-pair { gap: 16px; }
+}
