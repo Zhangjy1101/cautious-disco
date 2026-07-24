@@ -372,7 +372,17 @@ const showDicePreview = (roundId) => {
   });
 };
 
-window.setTimeout(() => { showDicePreview(1); }, 0);
+const dicePreviewObserver = new MutationObserver(() => {
+  if (!elements.gameRoot.classList.contains("dice-animation-active")) {
+    showDicePreview(Number(elements.gameRoot.dataset.roundId));
+  }
+});
+dicePreviewObserver.observe(elements.gameRoot, { attributes: true, attributeFilter: ["data-round-id"] });
+
+window.setTimeout(() => {
+  void Promise.all([1, 2, 3].map(preloadDiceRound));
+  showDicePreview(1);
+}, 0);
 let controller;
 const moleRound = new MoleRoundController(elements, {
   onLog(event) {

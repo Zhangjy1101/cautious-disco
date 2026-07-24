@@ -1202,3 +1202,5 @@ button { font: inherit; }
 /* Show the supplied first-frame dice art before the first roll. */
 .game-stage.dice-animation-preview .dice-gif-canvas { display: block; }
 .game-stage.dice-animation-preview .dice-cube { display: none; }
+/* The supplied frame sequences replace all CSS placeholder dice. */
+.game-stage[data-roll-theme] .dice-cube { display: none !important; }
