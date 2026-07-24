@@ -103,8 +103,21 @@ const STAGE_ART_ANIMATIONS = [
 ];
 
 for (const animation of STAGE_ART_ANIMATIONS) {
-  // Keep QR startup light: action art uses a representative still instead of preloading every frame.
-  animation.element.src = `${animation.path}/000.png`;
+  const frames = Array.from({ length: animation.frameCount }, (_, index) => {
+    const image = new Image();
+    image.src = `${animation.path}/${String(index).padStart(3, '0')}.png?v=2`;
+    return image;
+  });
+  let currentFrame = -1;
+  const render = (now) => {
+    const nextFrame = Math.floor(now / animation.frameMs) % animation.frameCount;
+    if (nextFrame !== currentFrame) {
+      currentFrame = nextFrame;
+      animation.element.src = frames[nextFrame].src;
+    }
+    window.requestAnimationFrame(render);
+  };
+  window.requestAnimationFrame(render);
 }
 
 let buildVideoFrameId = 0;
@@ -165,11 +178,11 @@ const playThirdRoundBuildSequence = () => new Promise((resolve) => {
     renderTransparentBuildVideo();
   }).catch(showBuiltHouse);
 });
-const MOLE_HOLE_FRAMES = (() => {
+const MOLE_HOLE_FRAMES = Array.from({ length: 9 }, (_, index) => {
   const image = new Image();
-  image.src = './assets/mole-hole-frames/000.png';
-  return [image];
-})();
+  image.src = `./assets/mole-hole-frames/${String(index).padStart(3, '0')}.png?v=1`;
+  return image;
+});
 const moleHoleCanvases = Array.from(document.querySelectorAll('.mole-hole-art'));
 let renderedMoleHoleFrame = -1;
 const renderMoleHoleAnimation = (now) => {
@@ -192,12 +205,11 @@ const renderMoleHoleAnimation = (now) => {
   window.requestAnimationFrame(renderMoleHoleAnimation);
 };
 window.requestAnimationFrame(renderMoleHoleAnimation);
-const loadMoleStateFrames = (path) => {
+const loadMoleStateFrames = (path, count) => Array.from({ length: count }, (_, index) => {
   const image = new Image();
-  // A representative still preserves the interaction while avoiding frame-sequence downloads on mobile.
-  image.src = `${path}/000.png`;
-  return [image];
-};
+  image.src = `${path}/${String(index).padStart(3, '0')}.png?v=1`;
+  return image;
+});
 const MOLE_STATE_FRAMES = Object.freeze({
   emerge: loadMoleStateFrames('./assets/mole-emerge-frames', 6),
   idle: loadMoleStateFrames('./assets/mole-idle-frames', 4),
@@ -332,7 +344,7 @@ const renderDiceAnimation = (now) => {
 };
 
 const restartRoundDice = (roundId) => {
-  elements.gameRoot.classList.remove("dice-animation-active", "dice-animation-ready");
+  elements.gameRoot.classList.remove("dice-animation-active", "dice-animation-ready", "dice-animation-preview");
   activeDicePlayers = getDicePlayers(roundId);
   diceAnimationStartedAt = performance.now();
   elements.gameRoot.classList.add("dice-animation-active");
@@ -346,7 +358,21 @@ const restartRoundDice = (roundId) => {
 };
 
 window.requestAnimationFrame(renderDiceAnimation);
-window.setTimeout(() => { void preloadDiceRound(1); }, 0);
+
+const showDicePreview = (roundId) => {
+  const players = getDicePlayers(roundId);
+  preloadDiceRound(roundId).then((ready) => {
+    if (!ready || elements.gameRoot.classList.contains("dice-animation-active")) return;
+    for (const player of players) {
+      const frame = player.frames[0];
+      player.context.clearRect(0, 0, player.canvas.width, player.canvas.height);
+      player.context.drawImage(frame, 0, 0, player.canvas.width, player.canvas.height);
+    }
+    elements.gameRoot.classList.add("dice-animation-preview");
+  });
+};
+
+window.setTimeout(() => { showDicePreview(1); }, 0);
 let controller;
 const moleRound = new MoleRoundController(elements, {
   onLog(event) {

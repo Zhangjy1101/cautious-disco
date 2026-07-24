@@ -1198,3 +1198,7 @@ button { font: inherit; }
 .game-stage.show-final .final-screen { visibility: visible; opacity: 1; pointer-events: auto; }
 .final-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .final-play-now { position: absolute; z-index: 1; left: 15%; right: 15%; bottom: 2%; height: 22%; background: transparent; color: transparent; text-decoration: none; }
+
+/* Show the supplied first-frame dice art before the first roll. */
+.game-stage.dice-animation-preview .dice-gif-canvas { display: block; }
+.game-stage.dice-animation-preview .dice-cube { display: none; }
