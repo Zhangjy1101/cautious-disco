@@ -989,6 +989,9 @@ button { font: inherit; }
 .game-stage[data-roll-theme] .die-callout { position: absolute; bottom: calc(100% + 8px); }
 .game-stage[data-roll-theme] .dice-gif-canvas { display: none; position: absolute; top: 0; margin-top: 0; transform: scale(2); transform-origin: center; }
 .game-stage[data-roll-theme].dice-animation-active .dice-gif-canvas { display: block; }
+.game-stage[data-roll-theme].dice-animation-active:not(.dice-animation-ready) .dice-cube { display: block; }
+.game-stage[data-roll-theme] .dice-cube { display: block; }
+.game-stage[data-roll-theme].dice-animation-active.dice-animation-ready .dice-cube { display: none; }
 .game-stage[data-roll-theme] .dice-cube,
 .game-stage[data-roll-theme] .dice-gif-canvas { --cube-size: 74px; }
 @media (max-width: 380px) {

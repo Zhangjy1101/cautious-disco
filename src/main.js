@@ -103,21 +103,8 @@ const STAGE_ART_ANIMATIONS = [
 ];
 
 for (const animation of STAGE_ART_ANIMATIONS) {
-  const frames = Array.from({ length: animation.frameCount }, (_, index) => {
-    const image = new Image();
-    image.src = `${animation.path}/${String(index).padStart(3, '0')}.png?v=2`;
-    return image;
-  });
-  let currentFrame = -1;
-  const render = (now) => {
-    const nextFrame = Math.floor(now / animation.frameMs) % animation.frameCount;
-    if (nextFrame !== currentFrame) {
-      currentFrame = nextFrame;
-      animation.element.src = frames[nextFrame].src;
-    }
-    window.requestAnimationFrame(render);
-  };
-  window.requestAnimationFrame(render);
+  // Keep QR startup light: action art uses a representative still instead of preloading every frame.
+  animation.element.src = `${animation.path}/000.png`;
 }
 
 let buildVideoFrameId = 0;
@@ -178,11 +165,11 @@ const playThirdRoundBuildSequence = () => new Promise((resolve) => {
     renderTransparentBuildVideo();
   }).catch(showBuiltHouse);
 });
-const MOLE_HOLE_FRAMES = Array.from({ length: 9 }, (_, index) => {
+const MOLE_HOLE_FRAMES = (() => {
   const image = new Image();
-  image.src = `./assets/mole-hole-frames/${String(index).padStart(3, '0')}.png?v=1`;
-  return image;
-});
+  image.src = './assets/mole-hole-frames/000.png';
+  return [image];
+})();
 const moleHoleCanvases = Array.from(document.querySelectorAll('.mole-hole-art'));
 let renderedMoleHoleFrame = -1;
 const renderMoleHoleAnimation = (now) => {
@@ -205,11 +192,12 @@ const renderMoleHoleAnimation = (now) => {
   window.requestAnimationFrame(renderMoleHoleAnimation);
 };
 window.requestAnimationFrame(renderMoleHoleAnimation);
-const loadMoleStateFrames = (path, count) => Array.from({ length: count }, (_, index) => {
+const loadMoleStateFrames = (path) => {
   const image = new Image();
-  image.src = `${path}/${String(index).padStart(3, '0')}.png?v=1`;
-  return image;
-});
+  // A representative still preserves the interaction while avoiding frame-sequence downloads on mobile.
+  image.src = `${path}/000.png`;
+  return [image];
+};
 const MOLE_STATE_FRAMES = Object.freeze({
   emerge: loadMoleStateFrames('./assets/mole-emerge-frames', 6),
   idle: loadMoleStateFrames('./assets/mole-idle-frames', 4),
@@ -297,44 +285,10 @@ elements.finalVideo?.addEventListener('ended', () => {
   if (Number.isFinite(finalMoment)) elements.finalVideo.currentTime = finalMoment;
   elements.finalVideo.pause();
 });
-const restartRoundDice = (() => {
-  const playersByRound = new Map(Object.entries(ROUND_DICE_ANIMATIONS).map(([roundId, animations]) => [
-    Number(roundId),
-    animations.map(({ canvas, framePath, frameCount }) => {
-      const context = canvas.getContext('2d');
-      const frames = Array.from({ length: frameCount }, (_, index) => {
-        const image = new Image();
-        image.src = `${framePath}/${String(index).padStart(3, '0')}.png`;
-        return image;
-      });
-      return { canvas, context, frames, frameCount };
-    }),
-  ]));
-  let activePlayers = [];
-  let startedAt = null;
-
-  const render = (now) => {
-    if (startedAt !== null) {
-      const progress = Math.min(1, (now - startedAt) / ROUND_DICE_PLAY_MS);
-      for (const player of activePlayers) {
-        const frameIndex = Math.min(player.frameCount - 1, Math.floor(progress * (player.frameCount - 1)));
-        const frame = player.frames[frameIndex];
-        if (frame.complete && frame.naturalWidth) {
-          player.context.clearRect(0, 0, player.canvas.width, player.canvas.height);
-          player.context.drawImage(frame, 0, 0, player.canvas.width, player.canvas.height);
-        }
-      }
-    }
-    window.requestAnimationFrame(render);
-  };
-  window.requestAnimationFrame(render);
-
-  return (roundId) => {
-    activePlayers = playersByRound.get(roundId) ?? [];
-    startedAt = performance.now();
-    elements.gameRoot.classList.add('dice-animation-active');
-  };
-})();
+const restartRoundDice = () => {
+  // The CSS dice animation is local and does not depend on network frame images.
+  elements.gameRoot.classList.remove('dice-animation-active', 'dice-animation-ready');
+};
 let controller;
 const moleRound = new MoleRoundController(elements, {
   onLog(event) {
@@ -375,6 +329,8 @@ controller.start();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    void navigator.serviceWorker.register('./sw.js').catch(() => {});
+    void navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((registration) => void registration.unregister());
+    }).catch(() => {});
   });
 }
