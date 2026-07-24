@@ -81,7 +81,7 @@ export class DiceStageController {
     this.moleRound?.stop();
     this.flowToken += 1;
     this.roundIndex = 0;
-    this.el.gameRoot.classList.remove('is-rolling', 'is-landed', 'show-action', 'show-final', 'dice-animation-active', 'is-building-house', 'is-house-built');
+    this.el.gameRoot.classList.remove('is-rolling', 'is-landed', 'show-action', 'show-final', 'dice-animation-active', 'dice-animation-ready', 'is-building-house', 'is-house-built');
     this.el.finalScreen?.setAttribute('aria-hidden', 'true');
     this.el.finalVideo?.pause();
     this.el.actionScreen.setAttribute('aria-hidden', 'true');
@@ -91,7 +91,7 @@ export class DiceStageController {
 
   prepareRound(reason = 'round_ready') {
     const round = this.currentRound;
-    this.el.gameRoot.classList.remove('is-rolling', 'is-landed', 'show-action', 'show-final', 'dice-animation-active', 'is-building-house', 'is-house-built');
+    this.el.gameRoot.classList.remove('is-rolling', 'is-landed', 'show-action', 'show-final', 'dice-animation-active', 'dice-animation-ready', 'is-building-house', 'is-house-built');
     this.el.finalScreen?.setAttribute('aria-hidden', 'true');
     this.el.finalVideo?.pause();
     this.el.gameRoot.dataset.rollTheme = round.theme;

@@ -285,10 +285,68 @@ elements.finalVideo?.addEventListener('ended', () => {
   if (Number.isFinite(finalMoment)) elements.finalVideo.currentTime = finalMoment;
   elements.finalVideo.pause();
 });
-const restartRoundDice = () => {
-  // The CSS dice animation is local and does not depend on network frame images.
-  elements.gameRoot.classList.remove('dice-animation-active', 'dice-animation-ready');
+const dicePlayersByRound = new Map();
+
+const createDicePlayers = (roundId) => (ROUND_DICE_ANIMATIONS[roundId] ?? []).map((animation) => {
+  const context = animation.canvas.getContext("2d");
+  const frames = Array.from({ length: animation.frameCount }, (_, index) => {
+    const image = new Image();
+    image.src = animation.framePath + "/" + String(index).padStart(3, "0") + ".png";
+    return image;
+  });
+  return { ...animation, context, frames };
+});
+
+const getDicePlayers = (roundId) => {
+  if (!dicePlayersByRound.has(roundId)) dicePlayersByRound.set(roundId, createDicePlayers(roundId));
+  return dicePlayersByRound.get(roundId);
 };
+
+const preloadDiceRound = (roundId) => {
+  const players = getDicePlayers(roundId);
+  return Promise.all(players.flatMap((player) => player.frames.map((frame) => new Promise((resolve) => {
+    if (frame.complete) {
+      resolve(frame.naturalWidth > 0);
+      return;
+    }
+    frame.addEventListener("load", () => resolve(true), { once: true });
+    frame.addEventListener("error", () => resolve(false), { once: true });
+  })))).then((loaded) => loaded.every(Boolean));
+};
+
+let diceAnimationStartedAt = null;
+let activeDicePlayers = [];
+
+const renderDiceAnimation = (now) => {
+  if (diceAnimationStartedAt !== null) {
+    const progress = Math.min(1, (now - diceAnimationStartedAt) / ROUND_DICE_PLAY_MS);
+    for (const player of activeDicePlayers) {
+      const frameIndex = Math.min(player.frameCount - 1, Math.floor(progress * (player.frameCount - 1)));
+      const frame = player.frames[frameIndex];
+      if (!frame.complete || !frame.naturalWidth) continue;
+      player.context.clearRect(0, 0, player.canvas.width, player.canvas.height);
+      player.context.drawImage(frame, 0, 0, player.canvas.width, player.canvas.height);
+    }
+  }
+  window.requestAnimationFrame(renderDiceAnimation);
+};
+
+const restartRoundDice = (roundId) => {
+  elements.gameRoot.classList.remove("dice-animation-active", "dice-animation-ready");
+  activeDicePlayers = getDicePlayers(roundId);
+  diceAnimationStartedAt = performance.now();
+  elements.gameRoot.classList.add("dice-animation-active");
+
+  preloadDiceRound(roundId).then((ready) => {
+    if (ready && activeDicePlayers === getDicePlayers(roundId)) {
+      diceAnimationStartedAt = performance.now();
+      elements.gameRoot.classList.add("dice-animation-ready");
+    }
+  });
+};
+
+window.requestAnimationFrame(renderDiceAnimation);
+window.setTimeout(() => { void preloadDiceRound(1); }, 0);
 let controller;
 const moleRound = new MoleRoundController(elements, {
   onLog(event) {
